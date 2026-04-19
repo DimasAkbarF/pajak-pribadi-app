@@ -1,0 +1,142 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hardcoded Dark Mode - Always use dark theme */
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 2, 6, 23;
+  --background-end-rgb: 15, 23, 42;
+
+  /* Primary blue palette */
+  --color-primary-50: 239 246 255;
+  --color-primary-100: 219 234 254;
+  --color-primary-200: 191 219 254;
+  --color-primary-300: 147 197 253;
+  --color-primary-400: 96 165 250;
+  --color-primary-500: 59 130 246;
+  --color-primary-600: 37 99 235;
+  --color-primary-700: 29 78 216;
+  --color-primary-800: 30 64 175;
+  --color-primary-900: 30 58 138;
+  --color-primary-950: 23 37 84;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+    to bottom,
+    rgb(var(--background-start-rgb)),
+    rgb(var(--background-end-rgb))
+  );
+  min-height: 100vh;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .bg-radial-gradient {
+    background: radial-gradient(circle at center, var(--tw-gradient-from) 0%, var(--tw-gradient-to) 100%);
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* Custom scrollbar - Always dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* STRICT FIX: All dropdown/select elements must have dark backgrounds */
+select,
+select option,
+select:focus,
+select:active,
+select:hover,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  -webkit-background-color: #0f172a !important;
+}
+
+/* Override any browser autofill styles */
+select:-internal-autofill-selected,
+select:-internal-autofill-previewed {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Ensure option elements are dark */
+option {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Fix for select dropdown popup in all browsers */
+@supports (-webkit-appearance: none) {
+  select {
+    background-color: #0f172a !important;
+  }
+}
+
+/* Microsoft Edge/IE specific */
+select::-ms-value {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Firefox specific */
+@-moz-document url-prefix() {
+  select, option {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+  }
+}
