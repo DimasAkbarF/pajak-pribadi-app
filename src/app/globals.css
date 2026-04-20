@@ -6,7 +6,7 @@
 :root {
   --foreground-rgb: 255, 255, 255;
   --background-start-rgb: 2, 6, 23;
-  --background-end-rgb: 15, 23, 42;
+  --background-end-rgb: 2, 6, 23;
 
   /* Primary blue palette */
   --color-primary-50: 239 246 255;
@@ -102,41 +102,41 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  background-color: #0f172a !important;
+  background-color: #020617 !important;
   color: #f8fafc !important;
-  -webkit-background-color: #0f172a !important;
+  -webkit-background-color: #020617 !important;
 }
 
 /* Override any browser autofill styles */
 select:-internal-autofill-selected,
 select:-internal-autofill-previewed {
-  background-color: #0f172a !important;
+  background-color: #020617 !important;
   color: #f8fafc !important;
 }
 
 /* Ensure option elements are dark */
 option {
-  background-color: #0f172a !important;
+  background-color: #020617 !important;
   color: #f8fafc !important;
 }
 
 /* Fix for select dropdown popup in all browsers */
 @supports (-webkit-appearance: none) {
   select {
-    background-color: #0f172a !important;
+    background-color: #020617 !important;
   }
 }
 
 /* Microsoft Edge/IE specific */
 select::-ms-value {
-  background-color: #0f172a !important;
+  background-color: #020617 !important;
   color: #f8fafc !important;
 }
 
 /* Firefox specific */
 @-moz-document url-prefix() {
   select, option {
-    background-color: #0f172a !important;
+    background-color: #020617 !important;
     color: #f8fafc !important;
   }
 }

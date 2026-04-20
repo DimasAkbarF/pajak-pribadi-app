@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import {
   Briefcase, Store, ClipboardList, Scale, Calculator,
   ChevronRight, Info, AlertCircle, Wallet
@@ -21,9 +22,22 @@ import {
   getNormaCities,
   getProfessionsByCity,
   getNormaPersen,
+  getAllProfesiNames,
+  getNPPNByProfesi,
+  parseNPPN,
+  getJenisUsahaCategories,
+  getJenisUsahaByCategory,
+  getNPPNByJenisUsaha,
 } from "@/lib/tax-engine";
-import { generateTaxPDF } from "@/lib/pdf-generator";
-import TaxResult from "./TaxResult";
+
+const TaxResult = dynamic(() => import("./TaxResult"), {
+  loading: () => <div className="animate-pulse bg-white/[0.03] rounded-2xl h-64" />,
+});
+
+const generateTaxPDF = async (...args: Parameters<typeof import("@/lib/pdf-generator").generateTaxPDF>) => {
+  const { generateTaxPDF: fn } = await import("@/lib/pdf-generator");
+  return fn(...args);
+};
 
 const STATUS_OPTIONS: StatusPajak[] = [
   "TK/0", "TK/1", "TK/2", "TK/3",
@@ -49,8 +63,8 @@ const STATUS_LABELS: Record<StatusPajak, string> = {
 const TABS: { id: TaxModule; label: string; icon: React.ElementType; description: string; color: string }[] = [
   { id: "karyawan", label: "Pegawai/Karyawan", icon: Briefcase, description: "PPh 21 dengan Biaya Jabatan", color: "blue" },
   { id: "umkm", label: "UMKM", icon: Store, description: "PP 55/2022 - Tarif Final 0.5%", color: "emerald" },
-  { id: "norma", label: "Norma (NPPN)", icon: ClipboardList, description: "Penghitungan Norma Penghasilan Neto", color: "amber" },
-  { id: "profesi", label: "Profesi Bebas", icon: Scale, description: "Pengeluaran Operasional Aktual", color: "violet" },
+  { id: "norma", label: "Norma (NPPN)", icon: ClipboardList, description: "NPPN per Kota (10 Ibukota Provinsi)", color: "amber" },
+  { id: "profesi", label: "Profesi Bebas", icon: Scale, description: "NPPN Profesi (10 Ibukota Provinsi)", color: "violet" },
 ];
 
 function RupiahInput({
@@ -192,11 +206,19 @@ export default function CalculationForm() {
     pph25Dibayar: 0,
   });
 
+  const BULAN_OPTIONS = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
   const [umkmInput, setUmkmInput] = useState<UMKMInput>({
+    bulan: "Januari",
+    omzetBulanIni: 0,
+    totalOmzet: 0,
     omsetTahunan: 0,
   });
 
-  const [normaInput, setNormaInput] = useState<NormaInput>({
+  const [normaInput, setNormaInput] = useState<NormaInput & { kategoriUsaha: string; jenisUsaha: string }>({
     penghasilanBruto: 0,
     kota: getNormaCities()[0],
     jenisProfesi: "Dokter/Profesi Medis",
@@ -206,11 +228,15 @@ export default function CalculationForm() {
     pph22Dibayar: 0,
     pph23Dibayar: 0,
     pph25Dibayar: 0,
+    kategoriUsaha: "Perdagangan (10 Ibukota Provinsi)",
+    jenisUsaha: "Perdagangan Besar Barang Hasil Pertanian",
   });
 
   const [profesiInput, setProfesiInput] = useState<ProfesiInput>({
     penghasilanBruto: 0,
     pengeluaranOperasional: 0,
+    jenisProfesi: "Dokter Umum",
+    normaPersen: 50,
     statusPajak: "TK/0",
     pph21Dibayar: 0,
     pph22Dibayar: 0,
@@ -244,11 +270,12 @@ export default function CalculationForm() {
     calculate();
   }, [calculate]);
 
-  // Update norma persen when kota or profesi changes
+  // Update norma persen when jenis usaha changes
   useEffect(() => {
-    const persen = getNormaPersen(normaInput.kota, normaInput.jenisProfesi);
+    const nppnString = getNPPNByJenisUsaha(normaInput.jenisUsaha);
+    const persen = parseNPPN(nppnString);
     setNormaInput((prev) => ({ ...prev, normaPersen: persen }));
-  }, [normaInput.kota, normaInput.jenisProfesi]);
+  }, [normaInput.jenisUsaha]);
 
   const handleDownloadPDF = async () => {
     if (!result) return;
@@ -258,11 +285,13 @@ export default function CalculationForm() {
       inputValues["Status Pajak"] = STATUS_LABELS[karyawanInput.statusPajak];
       inputValues["Penghasilan Bruto"] = formatRupiah(karyawanInput.penghasilanBruto);
     } else if (activeTab === "umkm") {
-      inputValues["Omset Tahunan"] = formatRupiah(umkmInput.omsetTahunan);
+      inputValues["Bulan"] = umkmInput.bulan;
+      inputValues["Omzet Bulan Ini"] = formatRupiah(umkmInput.omzetBulanIni);
+      inputValues["Total Omzet (Jan s.d. Bulan Ini)"] = formatRupiah(umkmInput.totalOmzet);
     } else if (activeTab === "norma") {
       inputValues["Status Pajak"] = STATUS_LABELS[normaInput.statusPajak];
-      inputValues["Kota"] = normaInput.kota;
-      inputValues["Jenis Profesi"] = normaInput.jenisProfesi;
+      inputValues["Kategori Usaha"] = normaInput.kategoriUsaha;
+      inputValues["Jenis Usaha"] = normaInput.jenisUsaha;
       inputValues["Penghasilan Bruto"] = formatRupiah(normaInput.penghasilanBruto);
     } else if (activeTab === "profesi") {
       inputValues["Status Pajak"] = STATUS_LABELS[profesiInput.statusPajak];
@@ -351,7 +380,9 @@ export default function CalculationForm() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveTab(tab.id as TaxModule)}
+                aria-label={`${tab.label}: ${tab.description}`}
+                aria-pressed={isActive}
                 className={`group relative flex items-start gap-4 p-5 rounded-2xl border-2 transition-all duration-500 text-left overflow-hidden ${
                   isActive 
                     ? "bg-blue-500/10 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/30" 
@@ -450,13 +481,30 @@ export default function CalculationForm() {
                 </div>
               </div>
 
-              <div className="max-w-md">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <SelectInput
+                  label="Bulan yang Dihitung"
+                  id="bulan-umkm"
+                  value={umkmInput.bulan}
+                  onChange={(v) => setUmkmInput({ ...umkmInput, bulan: v })}
+                  options={BULAN_OPTIONS.map((b) => ({ value: b, label: b }))}
+                />
                 <RupiahInput
-                  label="Omset Tahunan"
-                  id="omset-umkm"
-                  value={umkmInput.omsetTahunan}
-                  onChange={(v) => setUmkmInput({ ...umkmInput, omsetTahunan: v })}
-                  hint="PPh 0% untuk omset ≤ Rp500jt, 0.5% untuk omset > Rp500jt"
+                  label="Omzet Bulan Ini (Rp)"
+                  id="omzet-bulan-ini"
+                  value={umkmInput.omzetBulanIni}
+                  onChange={(v) => setUmkmInput({ ...umkmInput, omzetBulanIni: v })}
+                  icon={Calculator}
+                  required
+                />
+                <RupiahInput
+                  label="Total Omzet Jan s.d. Bulan Ini (Rp)"
+                  id="total-omzet"
+                  value={umkmInput.totalOmzet}
+                  onChange={(v) => {
+                    setUmkmInput({ ...umkmInput, totalOmzet: v, omsetTahunan: v });
+                  }}
+                  hint="Digunakan untuk perhitungan PPh"
                   icon={Calculator}
                   required
                 />
@@ -485,30 +533,40 @@ export default function CalculationForm() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">Norma (NPPN)</h2>
-                  <p className="text-sm text-slate-400">Norma Penghitungan Penghasilan Neto</p>
+                  <p className="text-sm text-slate-400">Norma Penghitungan Penghasilan Neto - Jenis Usaha</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SelectInput
-                  label="Kota/Kabupaten"
-                  id="kota-norma"
-                  value={normaInput.kota}
-                  onChange={(v) => setNormaInput({ ...normaInput, kota: v })}
-                  options={getNormaCities().map((c) => ({ value: c, label: c }))}
+                  label="Kategori Usaha"
+                  id="kategori-usaha"
+                  value={normaInput.kategoriUsaha}
+                  onChange={(v) => {
+                    const firstItem = getJenisUsahaByCategory(v)[0];
+                    setNormaInput({ 
+                      ...normaInput, 
+                      kategoriUsaha: v,
+                      jenisUsaha: firstItem?.nama || ""
+                    });
+                  }}
+                  options={getJenisUsahaCategories().map((c) => ({ value: c, label: c }))}
                 />
                 <SelectInput
-                  label="Jenis Profesi"
-                  id="profesi-norma"
-                  value={normaInput.jenisProfesi}
-                  onChange={(v) => setNormaInput({ ...normaInput, jenisProfesi: v })}
-                  options={getProfessionsByCity(normaInput.kota).map((p) => ({ value: p, label: p }))}
+                  label="Jenis Usaha"
+                  id="jenis-usaha"
+                  value={normaInput.jenisUsaha}
+                  onChange={(v) => setNormaInput({ ...normaInput, jenisUsaha: v })}
+                  options={getJenisUsahaByCategory(normaInput.kategoriUsaha).map((i) => ({ 
+                    value: i.nama, 
+                    label: `${i.nppn} - ${i.nama}` 
+                  }))}
                 />
               </div>
 
               <div className="p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-amber-300">Norma Persentase:</span>
+                  <span className="text-sm font-medium text-amber-300">Presentase NPPN:</span>
                   <span className="text-2xl font-bold text-amber-400">{normaInput.normaPersen}%</span>
                 </div>
               </div>
@@ -554,26 +612,55 @@ export default function CalculationForm() {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold text-white">Profesi Bebas</h2>
-                  <p className="text-sm text-slate-400">Pengeluaran Operasional Aktual (Buku Besar)</p>
+                  <p className="text-sm text-slate-400">Norma Penghitungan Penghasilan Neto (NPPN)</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <SelectInput
+                  label="Jenis Profesi *10 Ibukota Provinsi*"
+                  id="jenis-profesi"
+                  value={profesiInput.jenisProfesi}
+                  onChange={(v) => {
+                    const nppnString = getNPPNByProfesi(v);
+                    const nppnNumber = parseNPPN(nppnString);
+                    setProfesiInput({ 
+                      ...profesiInput, 
+                      jenisProfesi: v,
+                      normaPersen: nppnNumber,
+                      pengeluaranOperasional: Math.floor(profesiInput.penghasilanBruto * (nppnNumber / 100))
+                    });
+                  }}
+                  options={getAllProfesiNames().map((p) => ({ 
+                    value: p, 
+                    label: `${getNPPNByProfesi(p)} - ${p}` 
+                  }))}
+                />
                 <RupiahInput
                   label="Penghasilan Bruto Tahunan"
                   id="bruto-profesi"
                   value={profesiInput.penghasilanBruto}
-                  onChange={(v) => setProfesiInput({ ...profesiInput, penghasilanBruto: v })}
+                  onChange={(v) => {
+                    const nppnNumber = profesiInput.normaPersen;
+                    setProfesiInput({ 
+                      ...profesiInput, 
+                      penghasilanBruto: v,
+                      pengeluaranOperasional: Math.floor(v * (nppnNumber / 100))
+                    });
+                  }}
                   icon={Wallet}
                   required
                 />
-                <RupiahInput
-                  label="Pengeluaran Operasional"
-                  id="operasional-profesi"
-                  value={profesiInput.pengeluaranOperasional}
-                  onChange={(v) => setProfesiInput({ ...profesiInput, pengeluaranOperasional: v })}
-                  hint="Total pengeluaran bisnis yang tercatat"
-                />
+              </div>
+
+              <div className="p-4 bg-violet-500/10 rounded-xl border border-violet-500/20">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-violet-300">Presentase NPPN:</span>
+                  <span className="text-2xl font-bold text-violet-400">{profesiInput.normaPersen}%</span>
+                </div>
+                <p className="text-xs text-violet-300/70 mt-1">
+                  Pengeluaran operasional dihitung otomatis: {formatRupiah(profesiInput.pengeluaranOperasional)}
+                </p>
               </div>
 
               <SelectInput

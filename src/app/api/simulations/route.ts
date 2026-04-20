@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Simulation from "@/models/Simulation";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export async function GET() {
   try {
     await dbConnect();
@@ -39,7 +42,45 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/simulations error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create simulation" },
+      { 
+        success: false, 
+        error: "Failed to create simulation",
+        details: error instanceof Error ? error.message : String(error)
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { id, ...updateData } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Missing simulation ID" },
+        { status: 400 }
+      );
+    }
+
+    await dbConnect();
+    const updatedSimulation = await Simulation.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+
+    if (!updatedSimulation) {
+      return NextResponse.json(
+        { success: false, error: "Simulation not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: updatedSimulation });
+  } catch (error) {
+    console.error("PUT /api/simulations error:", error);
+    return NextResponse.json(
+      { success: false, error: "Failed to update simulation" },
       { status: 500 }
     );
   }
@@ -50,19 +91,28 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    await dbConnect();
-
-    if (id) {
-      await Simulation.findByIdAndDelete(id);
-      return NextResponse.json({ success: true, message: "Deleted" });
-    } else {
-      await Simulation.deleteMany({});
-      return NextResponse.json({ success: true, message: "All deleted" });
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Missing simulation ID" },
+        { status: 400 }
+      );
     }
+
+    await dbConnect();
+    const deletedSimulation = await Simulation.findByIdAndDelete(id);
+
+    if (!deletedSimulation) {
+      return NextResponse.json(
+        { success: false, error: "Simulation not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, data: deletedSimulation });
   } catch (error) {
     console.error("DELETE /api/simulations error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to delete" },
+      { success: false, error: "Failed to delete simulation" },
       { status: 500 }
     );
   }

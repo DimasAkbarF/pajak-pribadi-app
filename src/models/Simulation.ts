@@ -48,37 +48,15 @@ const SimulationSchema = new Schema<ISimulation>(
     },
     result: {
       type: {
-        penghasilanBruto: { type: Number, required: true },
-        biayaJabatan: { type: Number, required: true },
-        pengeluaranNorma: { type: Number, required: true },
-        pengeluaranOperasional: { type: Number, required: true },
-        penghasilanNeto: { type: Number, required: true },
-        ptkp: { type: Number, required: true },
-        pkp: { type: Number, required: true },
-        pkpRounded: { type: Number, required: true },
-        progressiveTax: { type: Number, required: true },
-        umkmTax: { type: Number, required: true },
-        kreditPajak: {
-          type: {
-            pph21: { type: Number, required: true },
-            pph22: { type: Number, required: true },
-            pph23: { type: Number, required: true },
-            pph25: { type: Number, required: true },
-            total: { type: Number, required: true },
-          },
-          required: true,
-          _id: false,
-        },
         totalTax: { type: Number, required: true },
-        status: {
-          type: String,
-          enum: ["Kurang Bayar", "Nihil", "Lebih Bayar"],
-          required: true,
-        },
-        kurangBayar: { type: Number, required: true },
+        status: { type: String, required: true },
       },
       required: true,
       _id: false,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

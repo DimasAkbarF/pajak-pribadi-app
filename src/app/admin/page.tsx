@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Trash2, LogOut, Database } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { Trash2, Pencil, BarChart2, Activity, Users } from "lucide-react";
 import { formatRupiah } from "@/lib/tax-engine";
 import { TaxModule } from "@/types";
 
@@ -16,52 +17,15 @@ interface Simulation {
 }
 
 export default function AdminPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState<string | null>(null);
   const [simulations, setSimulations] = useState<Simulation[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editModal, setEditModal] = useState<{ open: boolean; data: Simulation | null }>({ open: false, data: null });
+  const [deleteModal, setDeleteModal] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
+  const [editForm, setEditForm] = useState<{ module: string; totalTax: number; status: string }>({ module: "", totalTax: 0, status: "" });
 
-  // Check for existing token
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (token) {
-      setIsLoggedIn(true);
-      fetchSimulations();
-    }
+    fetchSimulations();
   }, []);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError(null);
-
-    try {
-      const response = await fetch("/api/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem("adminToken", data.data.token);
-        setIsLoggedIn(true);
-        fetchSimulations();
-      } else {
-        setLoginError("Username atau password salah");
-      }
-    } catch {
-      setLoginError("Terjadi kesalahan. Coba lagi.");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    setIsLoggedIn(false);
-    setSimulations([]);
-  };
 
   const fetchSimulations = async () => {
     setLoading(true);
@@ -72,196 +36,223 @@ export default function AdminPage() {
         setSimulations(data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch simulations:", error);
+      console.error("Failed to fetch simulations", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const deleteSimulation = async (id: string) => {
+  const handleEdit = (simulation: Simulation) => {
+    setEditModal({ open: true, data: simulation });
+    setEditForm({ module: simulation.module, totalTax: simulation.result.totalTax, status: simulation.result.status });
+  };
+
+  const saveEdit = async () => {
+    if (!editModal.data) return;
     try {
-      const response = await fetch(`/api/simulations?id=${id}`, {
+      const id = editModal.data._id;
+      const response = await fetch(`/api/simulations/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ module: editForm.module, result: { totalTax: Number(editForm.totalTax), status: editForm.status } }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        await fetchSimulations();
+        setEditModal({ open: false, data: null });
+      } else {
+        console.error("Update failed", data);
+      }
+    } catch (error) {
+      console.error("Failed to update simulation", error);
+    }
+  };
+
+  const handleDelete = (id: string) => {
+    setDeleteModal({ open: true, id });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.id) return;
+    try {
+      const response = await fetch(`/api/simulations/${deleteModal.id}`, {
         method: "DELETE",
       });
       const data = await response.json();
       if (data.success) {
-        setSimulations(simulations.filter((s) => s._id !== id));
+        await fetchSimulations();
+        setDeleteModal({ open: false, id: null });
+      } else {
+        console.error("Delete failed", data);
       }
     } catch (error) {
-      console.error("Failed to delete:", error);
+      console.error("Failed to delete simulation", error);
     }
   };
 
-  const clearAll = async () => {
-    if (!confirm("Yakin ingin menghapus semua simulasi?")) return;
-    try {
-      const response = await fetch("/api/simulations", {
-        method: "DELETE",
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSimulations([]);
-      }
-    } catch (error) {
-      console.error("Failed to clear all:", error);
-    }
-  };
+  return (
+    <div className="min-h-screen bg-[#020617] text-white font-inter p-6">
+      <nav className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <Link href="/dashboard" legacyBehavior>
+          <a className="border border-white/10 hover:bg-white/5 text-zinc-300 text-sm px-4 py-2 rounded-lg transition-all">
+            back to calculator
+          </a>
+        </Link>
+      </nav>
 
-  if (!isLoggedIn) {
-    return (
-      <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4">
-        <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Database className="w-8 h-8 text-white" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              Login untuk mengelola data simulasi
-            </p>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Username
-              </label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="admin"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                placeholder="••••••"
-              />
-            </div>
-            {loginError && (
-              <p className="text-sm text-red-600 dark:text-red-400">{loginError}</p>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="p-6 bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-inner flex flex-col items-center">
+          <BarChart2 className="text-indigo-600 w-8 h-8 mb-4" />
+          <h2 className="text-xl font-semibold">Total Data</h2>
+          <p className="text-3xl font-bold">{simulations.length}</p>
+        </div>
+        <div className="p-6 bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-inner flex flex-col items-center">
+          <Activity className="text-indigo-600 w-8 h-8 mb-4" />
+          <h2 className="text-xl font-semibold">Total Revenue Tax</h2>
+          <p className="text-3xl font-bold">
+            {formatRupiah(
+              simulations.reduce((sum, sim) => sum + sim.result.totalTax, 0)
             )}
-            <button
-              type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition"
-            >
-              Login
-            </button>
-          </form>
-
-          <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-6">
-            Default: admin / admin1
+          </p>
+        </div>
+        <div className="p-6 bg-white/[0.03] backdrop-blur-xl rounded-2xl shadow-inner flex flex-col items-center">
+          <Users className="text-indigo-600 w-8 h-8 mb-4" />
+          <h2 className="text-xl font-semibold">User Active</h2>
+          <p className="text-3xl font-bold">
+            {simulations.filter((sim) => sim.result.status === "active").length}
           </p>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Admin Dashboard</h1>
-          <p className="text-gray-600 dark:text-gray-400">Kelola data simulasi perhitungan pajak</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
+      {/* Data Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto border-collapse border border-white/5 bg-white/[0.03] backdrop-blur-xl rounded-xl">
+          <thead className="sticky top-0 bg-white/5 text-xs font-semibold uppercase tracking-widest">
+            <tr>
+              <th className="p-4 border border-white/5">Module</th>
+              <th className="p-4 border border-white/5">Total Tax</th>
+              <th className="p-4 border border-white/5">Status</th>
+              <th className="p-4 border border-white/5">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {simulations.map((sim) => (
+              <tr
+                key={sim._id}
+                className="hover:bg-white/5 transition duration-200"
+              >
+                <td className="p-4 border border-white/5">{sim.module}</td>
+                <td className="p-4 border border-white/5">
+                  {formatRupiah(sim.result.totalTax)}
+                </td>
+                <td className="p-4 border border-white/5">
+                  <span
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      sim.result.status === "active"
+                        ? "bg-green-500/10 text-green-400 border-green-500/20"
+                        : "bg-red-500/10 text-red-400 border-red-500/20"
+                    }`}
+                  >
+                    {sim.result.status}
+                  </span>
+                </td>
+                <td className="p-4 border border-white/5 flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEdit(sim);
+                    }}
+                    className="text-indigo-400 border border-indigo-500/10 hover:bg-white/5 p-2 rounded-lg"
+                  >
+                    <Pencil />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(sim._id);
+                    }}
+                    className="text-red-400 border border-red-500/10 hover:bg-white/5 p-2 rounded-lg"
+                  >
+                    <Trash2 />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900 dark:text-white">
-            Simulasi Tersimpan ({simulations.length})
-          </h2>
-          <button
-            onClick={clearAll}
-            className="text-sm text-red-600 dark:text-red-400 hover:underline"
-          >
-            Hapus Semua
-          </button>
-        </div>
+      {/* Edit Modal */}
+      {editModal.open && editModal.data && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="w-full max-w-lg bg-[#0f172a] border border-white/10 p-6 rounded-2xl text-zinc-400">
+            <h2 className="text-xl font-bold text-white mb-4">Edit Simulation</h2>
 
-        {loading ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Memuat data...</div>
-        ) : simulations.length === 0 ? (
-          <div className="p-8 text-center text-gray-500 dark:text-gray-400">
-            Belum ada simulasi tersimpan
+            <label className="block text-sm text-zinc-300 mb-1">Module</label>
+            <input
+              value={editForm.module}
+              onChange={(e) => setEditForm((s) => ({ ...s, module: e.target.value }))}
+              className="w-full bg-transparent border border-white/10 rounded px-3 py-2 text-white mb-3"
+            />
+
+            <label className="block text-sm text-zinc-300 mb-1">Total Tax</label>
+            <input
+              type="number"
+              value={editForm.totalTax}
+              onChange={(e) => setEditForm((s) => ({ ...s, totalTax: Number(e.target.value) }))}
+              className="w-full bg-transparent border border-white/10 rounded px-3 py-2 text-white mb-3"
+            />
+
+            <label className="block text-sm text-zinc-300 mb-1">Status</label>
+            <input
+              value={editForm.status}
+              onChange={(e) => setEditForm((s) => ({ ...s, status: e.target.value }))}
+              className="w-full bg-transparent border border-white/10 rounded px-3 py-2 text-white"
+            />
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setEditModal({ open: false, data: null })}
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg px-4 py-2"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveEdit}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2"
+              >
+                Save
+              </button>
+            </div>
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700/50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Tanggal
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Modul
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Total PPh
-                  </th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Aksi
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {simulations.map((sim) => (
-                  <tr key={sim._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                      {new Date(sim.createdAt).toLocaleString("id-ID")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white capitalize">
-                      {sim.module}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          sim.result.status === "Kurang Bayar"
-                            ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400"
-                            : sim.result.status === "Nihil"
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400"
-                            : "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400"
-                        }`}
-                      >
-                        {sim.result.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900 dark:text-white">
-                      {formatRupiah(sim.result.totalTax)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <button
-                        onClick={() => deleteSimulation(sim._id)}
-                        className="p-1.5 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.open && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="w-full max-w-md bg-[#0f172a] border border-white/10 p-6 rounded-2xl text-zinc-400">
+            <h2 className="text-xl font-bold text-white mb-2">Confirm Delete</h2>
+            <p className="text-zinc-400">Apakah Anda yakin ingin menghapus data ini?</p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={confirmDelete}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-lg px-4 py-2"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setDeleteModal({ open: false, id: null })}
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg px-4 py-2"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

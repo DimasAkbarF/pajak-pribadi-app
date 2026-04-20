@@ -32,21 +32,27 @@ export default function CTASection() {
     <section className="relative z-10 py-24 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto">
         <AnimatedSection>
-          <div className="p-8 md:p-12 rounded-3xl bg-gradient-to-br from-blue-600/20 via-indigo-600/20 to-violet-600/20 border border-white/10 backdrop-blur-md">
-            <div className="text-center">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 mb-6">
+          <div className="p-8 md:p-12 rounded-3xl bg-slate-950/40 border border-white/10 backdrop-blur-sm relative overflow-hidden group">
+            {/* Subtle background glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-violet-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            <div className="text-center relative z-10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600/10 border border-blue-500/20 mb-6">
                 <Award className="w-8 h-8 text-blue-400" />
               </div>
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-                Siap untuk Menghitung Pajak Anda?
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                Siap untuk Menghitung <br className="hidden md:block" />
+                <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                  Pajak Anda?
+                </span>
               </h2>
-              <p className="text-slate-400 text-lg mb-8 max-w-2xl mx-auto">
-                Bergabung dengan ribuan pengguna yang telah menggunakan KalkulatorPajak.id
+              <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+                Bergabung dengan ribuan pengguna yang telah menggunakan KalkulatorPajak
                 untuk perhitungan pajak yang akurat dan cepat.
               </p>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-slate-950 hover:bg-slate-100 font-semibold text-lg transition-colors"
+                className="inline-flex items-center gap-2 px-10 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-lg transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0"
               >
                 Mulai Sekarang Gratis
                 <ArrowRight className="w-5 h-5" />

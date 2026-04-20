@@ -61,8 +61,8 @@ export default function HowItWorksSection() {
             },
           ].map((item, i) => (
             <AnimatedSection key={i} className="relative">
-              <div className="p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-sm">
-                <div className="text-5xl font-bold text-white/10 mb-4">{item.step}</div>
+              <div className="p-8 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
+                <div className="text-5xl font-bold text-white mb-4">{item.step}</div>
                 <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
                   <item.icon className="w-6 h-6 text-blue-400" />
                 </div>

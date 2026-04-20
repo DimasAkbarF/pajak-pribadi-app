@@ -134,14 +134,14 @@ function formatRupiah(amount: number): string {
 
 function ReferenceTables() {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* PTKP Table */}
       <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden h-fit"
+        className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden h-fit"
       >
-        <div className="p-4 border-b border-white/10 bg-white/5">
+        <div className="p-4 border-b border-white/10 bg-white/[0.03]">
           <div className="flex items-center gap-2">
             <Users className="w-5 h-5 text-blue-400" />
             <h3 className="font-semibold text-white">PTKP 2026</h3>
@@ -149,7 +149,7 @@ function ReferenceTables() {
         </div>
         <div className="max-h-64 overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="bg-white/5 sticky top-0">
+            <thead className="bg-white/[0.03] sticky top-0">
               <tr>
                 <th className="px-4 py-2 text-left text-slate-400 font-medium">Status</th>
                 <th className="px-4 py-2 text-right text-slate-400 font-medium">Nilai</th>
@@ -157,7 +157,7 @@ function ReferenceTables() {
             </thead>
             <tbody className="divide-y divide-white/5">
               {ptkpData.map((item) => (
-                <tr key={item.status} className="hover:bg-white/5">
+                <tr key={item.status} className="hover:bg-white/[0.03]">
                   <td className="px-4 py-2 text-slate-300">{item.status}</td>
                   <td className="px-4 py-2 text-right text-white font-medium">
                     {formatRupiah(item.value)}
@@ -167,7 +167,7 @@ function ReferenceTables() {
             </tbody>
           </table>
         </div>
-        <div className="p-3 border-t border-white/10 bg-white/5">
+        <div className="p-3 border-t border-white/10 bg-white/[0.03]">
           <p className="text-xs text-slate-400">
             +Rp4,5jt per tanggungan (maksimal 3 tanggungan)
           </p>
@@ -179,9 +179,9 @@ function ReferenceTables() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden h-fit"
+        className="bg-white/[0.03] border border-white/10 rounded-2xl overflow-hidden h-fit"
       >
-        <div className="p-4 border-b border-white/10 bg-white/5">
+        <div className="p-4 border-b border-white/10 bg-white/[0.03]">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-emerald-400" />
             <h3 className="font-semibold text-white">Tarif PPh Progresif (UU HPP)</h3>
@@ -207,7 +207,7 @@ function ReferenceTables() {
             ))}
           </div>
         </div>
-        <div className="p-3 border-t border-white/10 bg-white/5">
+        <div className="p-3 border-t border-white/10 bg-white/[0.03]">
           <p className="text-xs text-slate-400">
             Berlaku sejak UU HPP 2021
           </p>
@@ -222,7 +222,7 @@ function CaraMenggunakan() {
     <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 border border-white/10 rounded-2xl p-6 mb-12"
+      className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 mb-12"
     >
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -236,7 +236,7 @@ function CaraMenggunakan() {
           return (
             <div key={i} className="relative">
               <div className="flex flex-col items-center text-center">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                <div className="w-12 h-12 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-center mb-3">
                   <Icon className="w-5 h-5 text-blue-400" />
                 </div>
                 <span className="text-[10px] text-blue-400 font-medium mb-1">
@@ -267,7 +267,7 @@ function FAQAccordion() {
     <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white/5 border border-white/10 rounded-2xl p-6 h-fit"
+      className="bg-white/[0.03] border border-white/10 rounded-2xl p-6 h-fit"
     >
       <div className="flex items-center gap-3 mb-6">
         <div className="p-2 bg-blue-500/10 rounded-lg">
@@ -283,7 +283,7 @@ function FAQAccordion() {
           >
             <button
               onClick={() => setOpenIndex(openIndex === i ? null : i)}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-colors"
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-white/[0.03] transition-colors"
             >
               <span className="font-medium text-white text-sm">
                 {faq.q}
@@ -328,11 +328,11 @@ function DeadlineInfo() {
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-white mb-2">Deadline Pelaporan SPT</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+            <div className="p-3 bg-white/[0.03] rounded-xl border border-white/10">
               <p className="text-xs text-slate-400 mb-1">Batas Akhir</p>
               <p className="text-lg font-bold text-white">31 Maret {new Date().getFullYear()}</p>
             </div>
-            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+            <div className="p-3 bg-white/[0.03] rounded-xl border border-white/10">
               <p className="text-xs text-slate-400 mb-1">Denda Keterlambatan</p>
               <p className="text-lg font-bold text-red-400">Rp100.000 + Bunga 2%/bulan</p>
             </div>
@@ -419,7 +419,7 @@ export default function DashboardPage() {
                     </div>
                   </div>
                   <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-                    Kalkulator PPh <span className="text-blue-500">Orang Pribadi</span>
+                    Simulasi <span className="text-blue-500">Kalkulator Pajak Indonesia</span>
                   </h1>
                   <p className="text-slate-400 mt-2 max-w-2xl text-lg leading-relaxed">
                     Hitung simulasi pajak penghasilan Anda dengan parameter terbaru (UU HPP & PP 55/2022).
@@ -429,17 +429,24 @@ export default function DashboardPage() {
               </m.div>
 
               {/* Main Calculator Section */}
-              <div className="mb-12">
+              <div className="mb-8">
                 <CalculationForm />
               </div>
 
+              {/* Reference Tables - PTKP & Tarif Progresif directly below calculator */}
+              <div className="mb-8">
+                <ReferenceTables />
+              </div>
+
               {/* Informational Sections */}
-              <div className="space-y-12 mt-16">
+              <div className="space-y-12 mt-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                  <ReferenceTables />
                   <div className="space-y-8 h-fit">
                     <DeadlineInfo />
                     <FAQAccordion />
+                  </div>
+                  <div className="hidden lg:block">
+                    {/* Spacer or additional info can go here */}
                   </div>
                 </div>
 

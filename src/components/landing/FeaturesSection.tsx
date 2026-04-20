@@ -36,10 +36,10 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
 
 function FeatureCard({ icon: Icon, title, description, color }: { icon: any; title: string; description: string; color: string }) {
   const colorClasses: Record<string, string> = {
-    blue: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    emerald: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    violet: "bg-violet-500/10 text-violet-400 border-violet-500/20",
-    amber: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    blue: "bg-blue-500/5 text-blue-400 border-blue-500/20",
+    emerald: "bg-emerald-500/5 text-emerald-400 border-emerald-500/20",
+    violet: "bg-violet-500/5 text-violet-400 border-violet-500/20",
+    amber: "bg-amber-500/5 text-amber-400 border-amber-500/20",
   };
 
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, UserCog } from "lucide-react"; // Menambahkan UserCog
 import { usePathname } from "next/navigation";
 
 export default function HeaderActions() {
@@ -31,10 +31,11 @@ export default function HeaderActions() {
         </Link>
       ) : (
         <Link
-          href="/dashboard"
-          className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-6 py-2.5 rounded-full text-sm font-bold tracking-wide transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/25"
+          href="/admin"
+          className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-2.5 rounded-md text-sm font-bold tracking-wide transition-all hover:scale-105 active:scale-95 shadow-lg shadow-blue-500/25"
         >
-          Mulai Gratis
+          <UserCog className="w-4 h-4" /> {/* Logo Admin */}
+          login
         </Link>
       )}
     </div>

@@ -9,7 +9,13 @@ import {
   ProfesiInput,
   TaxModule,
   NormaKotaEntry,
+  type JenisUsahaKategori,
+  type NPPNItem,
+  DATA_NPPN,
 } from "@/types";
+
+// Re-export for components
+export { DATA_NPPN, type JenisUsahaKategori, type NPPNItem };
 
 // ═══════════════════════════════════════════════════════════════
 // TARIF PROGRESIF PPh ORANG PRIBADI (UU HPP 2021 / UU 7/2021)
@@ -516,26 +522,62 @@ export function calculateKaryawan(input: KaryawanInput): TaxBreakdown {
   };
 }
 
-/** UMKM: Final tax calculation (PP 55/2022) */
+/** UMKM: Final tax calculation (PP 55/2022) with monthly breakdown */
 export function calculateUMKM(input: UMKMInput): TaxBreakdown {
-  const umkmTax = calculateUMKMTax(input.omsetTahunan);
-  const isBebas = input.omsetTahunan <= UMKM_BEBAS_THRESHOLD;
-
+  const { bulan, omzetBulanIni, totalOmzet } = input;
+  
+  // Constants
+  const BEBAS_THRESHOLD = 500_000_000;
+  const TARIF = 0.005; // 0.5%
+  
+  // Calculate
+  const bebasPPh = Math.min(totalOmzet, BEBAS_THRESHOLD);
+  const omzetKenaPajakTotal = Math.max(0, totalOmzet - BEBAS_THRESHOLD);
+  const totalPPhKumulatif = Math.floor(omzetKenaPajakTotal * TARIF);
+  
+  // Determine if this month's omzet is taxable
+  const kumulatifSebelumBulanIni = totalOmzet - omzetBulanIni;
+  let omzetKenaPajakBulan = 0;
+  
+  if (totalOmzet <= BEBAS_THRESHOLD) {
+    // Still under threshold, no tax
+    omzetKenaPajakBulan = 0;
+  } else if (kumulatifSebelumBulanIni >= BEBAS_THRESHOLD) {
+    // Already passed threshold in previous months
+    omzetKenaPajakBulan = omzetBulanIni;
+  } else {
+    // This month crosses the threshold
+    omzetKenaPajakBulan = totalOmzet - BEBAS_THRESHOLD;
+  }
+  
+  const pphSetorBulan = Math.floor(omzetKenaPajakBulan * TARIF);
+  const isBebas = totalOmzet <= BEBAS_THRESHOLD;
+  
   return {
-    penghasilanBruto: input.omsetTahunan,
+    penghasilanBruto: totalOmzet,
     biayaJabatan: 0,
     pengeluaranNorma: 0,
     pengeluaranOperasional: 0,
-    penghasilanNeto: input.omsetTahunan,
+    penghasilanNeto: totalOmzet,
     ptkp: 0,
     pkp: 0,
     pkpRounded: 0,
     progressiveTax: 0,
-    umkmTax: isBebas ? 0 : umkmTax,
+    umkmTax: totalPPhKumulatif,
     kreditPajak: { pph21: 0, pph22: 0, pph23: 0, pph25: 0, total: 0 },
-    totalTax: isBebas ? 0 : umkmTax,
+    totalTax: totalPPhKumulatif,
     status: isBebas ? "Nihil" : "Kurang Bayar",
-    kurangBayar: isBebas ? 0 : umkmTax,
+    kurangBayar: isBebas ? 0 : pphSetorBulan,
+    umkmDetail: {
+      bulan,
+      omzetBulanIni,
+      kumulatifOmzet: totalOmzet,
+      bebasPPh,
+      omzetKenaPajakBulan,
+      tarifPPh: 0.5,
+      pphSetorBulan,
+      totalPPhKumulatif,
+    },
   };
 }
 
@@ -765,4 +807,55 @@ export function getBracketBreakdown(pkp: number): { range: string; rate: number;
   }
 
   return result;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// JENIS USAHA (KLU) HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════
+
+/** Get all jenis usaha categories */
+export function getJenisUsahaCategories(): string[] {
+  return DATA_NPPN.JENIS_USAHA.map((k: JenisUsahaKategori) => k.kategori);
+}
+
+/** Get all items for a specific category */
+export function getJenisUsahaByCategory(kategori: string): NPPNItem[] {
+  const found = DATA_NPPN.JENIS_USAHA.find((k: JenisUsahaKategori) => k.kategori === kategori);
+  return found?.list || [];
+}
+
+/** Get NPPN percentage for a specific jenis usaha by name (searches both JENIS_USAHA and JENIS_PROFESI) */
+export function getNPPNByJenisUsaha(nama: string): string {
+  // Search in JENIS_USAHA
+  for (const kategori of DATA_NPPN.JENIS_USAHA) {
+    const item = kategori.list.find((i: NPPNItem) => i.nama === nama);
+    if (item) return item.nppn;
+  }
+  // Search in JENIS_PROFESI
+  const profesiItem = DATA_NPPN.JENIS_PROFESI.find((i: NPPNItem) => i.nama === nama);
+  if (profesiItem) return profesiItem.nppn;
+  return "15%"; // default fallback
+}
+
+/** Get NPPN for a specific profesi by name */
+export function getNPPNByProfesi(nama: string): string {
+  const item = DATA_NPPN.JENIS_PROFESI.find((i: NPPNItem) => i.nama === nama);
+  return item?.nppn || "50%"; // default 50% for profesi
+}
+
+/** Parse NPPN string (e.g., "30%") to number (30) */
+export function parseNPPN(nppnString: string): number {
+  const clean = nppnString.replace("%", "").trim();
+  const num = parseFloat(clean);
+  return isNaN(num) ? 15 : num; // default 15% if parsing fails
+}
+
+/** Get all jenis usaha names (flattened) for dropdown */
+export function getAllJenisUsahaNames(): string[] {
+  return DATA_NPPN.JENIS_USAHA.flatMap((k: JenisUsahaKategori) => k.list.map((i: NPPNItem) => i.nama));
+}
+
+/** Get all profesi names for dropdown */
+export function getAllProfesiNames(): string[] {
+  return DATA_NPPN.JENIS_PROFESI.map((i: NPPNItem) => i.nama);
 }

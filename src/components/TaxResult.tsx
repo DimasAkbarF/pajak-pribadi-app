@@ -4,6 +4,13 @@ import { TaxBreakdown } from "@/types";
 import { formatRupiah, getBracketBreakdown } from "@/lib/tax-engine";
 import { Download, TrendingUp, Calculator, Wallet, FileText, Save, CheckCircle, AlertTriangle, Info, Receipt } from "lucide-react";
 
+// Helper to get next month for due date
+function getNextMonth(bulan: string): string {
+  const bulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  const idx = bulanList.indexOf(bulan);
+  return bulanList[(idx + 1) % 12] || "Januari";
+}
+
 interface TaxResultProps {
   result: TaxBreakdown | null;
   onDownloadPDF: () => void;
@@ -31,7 +38,9 @@ export default function TaxResult({ result, onDownloadPDF, onSave, isSaving }: T
   }
 
   const brackets = getBracketBreakdown(result.pkpRounded);
-  const isBebas = result.penghasilanBruto <= 500_000_000 && result.umkmTax === 0;
+  const isBebas = result.umkmDetail 
+    ? result.umkmDetail.kumulatifOmzet <= 500_000_000 
+    : (result.penghasilanBruto <= 500_000_000 && result.umkmTax === 0);
 
   const getStatusColor = () => {
     switch (result.status) {
@@ -89,6 +98,24 @@ export default function TaxResult({ result, onDownloadPDF, onSave, isSaving }: T
             </div>
           </div>
         )}
+        
+        {/* UMKM Monthly Detail */}
+        {result.umkmDetail && (
+          <div className="mt-5 pt-4 border-t border-emerald-200 dark:border-emerald-800/50">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <p className="text-sm font-bold text-red-700 dark:text-red-400 uppercase">
+                KURANG BAYAR (PPh 29)
+              </p>
+            </div>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+              {formatRupiah(result.umkmDetail.pphSetorBulan)}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              PPh Final Setor Bulan Ini
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Calculation Breakdown */}
@@ -101,11 +128,50 @@ export default function TaxResult({ result, onDownloadPDF, onSave, isSaving }: T
         </div>
         
         <div className="space-y-1">
-          {/* Income Section */}
+          {/* UMKM Detail Section */}
+          {result.umkmDetail && (
+            <>
+              <div className="flex justify-between items-center py-3 px-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Omzet Bulan {result.umkmDetail.bulan}</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.omzetBulanIni)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Kumulatif Omzet Jan - {result.umkmDetail.bulan}</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.kumulatifOmzet)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20">
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Bebas PPh (Rp500 juta pertama)</span>
+                <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatRupiah(result.umkmDetail.bebasPPh)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Omzet Kena Pajak Bulan {result.umkmDetail.bulan}</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.omzetKenaPajakBulan)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3">
+                <span className="text-sm text-gray-600 dark:text-gray-400">Tarif PPh Final</span>
+                <span className="font-semibold text-gray-900 dark:text-white">{result.umkmDetail.tarifPPh}%</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-amber-50/50 dark:bg-amber-900/20">
+                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">PPh Setor Bulan {result.umkmDetail.bulan}</span>
+                <span className="font-bold text-amber-600 dark:text-amber-400">{formatRupiah(result.umkmDetail.pphSetorBulan)}</span>
+              </div>
+              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-amber-50/50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
+                <span className="text-sm font-bold text-amber-800 dark:text-amber-200">Total PPh s.d. {result.umkmDetail.bulan}</span>
+                <span className="font-bold text-amber-700 dark:text-amber-400">{formatRupiah(result.umkmDetail.totalPPhKumulatif)}</span>
+              </div>
+              <div className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400">
+                PPh disetor paling lambat tgl 15 {getNextMonth(result.umkmDetail.bulan)}.
+              </div>
+            </>
+          )}
+          
+          {/* Income Section - hide for UMKM if detail shown */}
+          {!result.umkmDetail && (
           <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
             <span className="text-sm text-gray-600 dark:text-gray-400">Penghasilan Bruto</span>
             <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.penghasilanBruto)}</span>
           </div>
+          )}
           
           {result.biayaJabatan > 0 && (
             <div className="flex justify-between items-center py-2 px-3">
