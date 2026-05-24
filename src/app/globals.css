@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hardcoded Dark Mode - Always use dark theme */
+/* Dark Navy Professional Theme */
 :root {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 2, 6, 23;
-  --background-end-rgb: 2, 6, 23;
+  --foreground-rgb: 229, 231, 235;
+  --background-start-rgb: 5, 11, 24;
+  --background-end-rgb: 5, 11, 24;
 
-  /* Primary blue palette */
+  /* Primary blue palette - muted corporate */
   --color-primary-50: 239 246 255;
   --color-primary-100: 219 234 254;
   --color-primary-200: 191 219 254;
@@ -24,11 +24,7 @@
 
 body {
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
+  background: #050B18;
   min-height: 100vh;
 }
 
@@ -42,7 +38,7 @@ body {
   }
 
   .glass-card {
-    @apply bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl;
+    @apply bg-white/[0.02] backdrop-blur-md border border-white/[0.06] shadow-xl;
   }
 
   .animate-fade-in-up {
@@ -64,7 +60,7 @@ body {
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(20px);
+      transform: translateY(16px);
     }
     to {
       opacity: 1;
@@ -73,10 +69,10 @@ body {
   }
 }
 
-/* Custom scrollbar - Always dark theme */
+/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -84,15 +80,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #475569;
-  border-radius: 4px;
+  background: #1e293b;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #64748b;
+  background: #334155;
 }
 
-/* STRICT FIX: All dropdown/select elements must have dark backgrounds */
+/* Select elements - dark navy backgrounds */
 select,
 select option,
 select:focus,
@@ -102,41 +98,41 @@ select:-webkit-autofill,
 select:-webkit-autofill:hover,
 select:-webkit-autofill:focus,
 select:-webkit-autofill:active {
-  background-color: #020617 !important;
-  color: #f8fafc !important;
-  -webkit-background-color: #020617 !important;
+  background-color: #071120 !important;
+  color: #e2e8f0 !important;
+  -webkit-background-color: #071120 !important;
 }
 
 /* Override any browser autofill styles */
 select:-internal-autofill-selected,
 select:-internal-autofill-previewed {
-  background-color: #020617 !important;
-  color: #f8fafc !important;
+  background-color: #071120 !important;
+  color: #e2e8f0 !important;
 }
 
 /* Ensure option elements are dark */
 option {
-  background-color: #020617 !important;
-  color: #f8fafc !important;
+  background-color: #071120 !important;
+  color: #e2e8f0 !important;
 }
 
 /* Fix for select dropdown popup in all browsers */
 @supports (-webkit-appearance: none) {
   select {
-    background-color: #020617 !important;
+    background-color: #071120 !important;
   }
 }
 
 /* Microsoft Edge/IE specific */
 select::-ms-value {
-  background-color: #020617 !important;
-  color: #f8fafc !important;
+  background-color: #071120 !important;
+  color: #e2e8f0 !important;
 }
 
 /* Firefox specific */
 @-moz-document url-prefix() {
   select, option {
-    background-color: #020617 !important;
-    color: #f8fafc !important;
+    background-color: #071120 !important;
+    color: #e2e8f0 !important;
   }
 }

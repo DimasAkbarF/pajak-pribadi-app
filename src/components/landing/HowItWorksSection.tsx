@@ -5,8 +5,8 @@ import { m, useInView } from "framer-motion";
 import { Calculator, TrendingUp, Download, ArrowRight } from "lucide-react";
 
 const fadeInUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" as const } },
 };
 
 function AnimatedSection({ children, className = "" }: { children: React.ReactNode; className?: string }) {
@@ -28,13 +28,13 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
 
 export default function HowItWorksSection() {
   return (
-    <section id="how-it-works" className="relative z-10 py-24 px-4 sm:px-6 lg:px-8 border-t border-white/5">
+    <section id="how-it-works" className="relative z-10 py-24 px-4 sm:px-6 lg:px-8" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
       <div className="max-w-7xl mx-auto">
         <AnimatedSection className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#E5E7EB] mb-4">
             Cara Penggunaan
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
+          <p className="text-[#94A3B8] text-sm max-w-2xl mx-auto">
             Hitung pajak UMKM Anda dalam 3 langkah mudah
           </p>
         </AnimatedSection>
@@ -61,17 +61,26 @@ export default function HowItWorksSection() {
             },
           ].map((item, i) => (
             <AnimatedSection key={i} className="relative">
-              <div className="p-8 rounded-2xl bg-white/[0.03] border border-white/10 backdrop-blur-sm">
-                <div className="text-5xl font-bold text-white mb-4">{item.step}</div>
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
-                  <item.icon className="w-6 h-6 text-blue-400" />
+              <div
+                className="p-8 rounded-2xl"
+                style={{
+                  background: 'rgba(255,255,255,0.015)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                }}
+              >
+                <div className="text-4xl font-bold text-[#1e293b] mb-4">{item.step}</div>
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center mb-4"
+                  style={{ background: 'rgba(37, 99, 235, 0.08)' }}
+                >
+                  <item.icon className="w-5 h-5 text-[#60A5FA]" />
                 </div>
-                <h3 className="text-xl font-semibold text-white mb-2">{item.title}</h3>
-                <p className="text-slate-400">{item.desc}</p>
+                <h3 className="text-base font-semibold text-[#E5E7EB] mb-2">{item.title}</h3>
+                <p className="text-[#94A3B8] text-sm leading-relaxed">{item.desc}</p>
               </div>
               {i < 2 && (
                 <div className="hidden md:block absolute top-1/2 -right-4 transform -translate-y-1/2">
-                  <ArrowRight className="w-8 h-8 text-white/20" />
+                  <ArrowRight className="w-6 h-6 text-white/10" />
                 </div>
               )}
             </AnimatedSection>

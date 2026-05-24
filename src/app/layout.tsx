@@ -28,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className="dark" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased bg-slate-950 text-slate-100 min-h-screen selection:bg-blue-500/30`} suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans antialiased min-h-screen selection:bg-blue-600/20`} style={{ background: '#050B18', color: '#E5E7EB' }} suppressHydrationWarning>
         <LayoutWrapper>
           {children}
         </LayoutWrapper>
