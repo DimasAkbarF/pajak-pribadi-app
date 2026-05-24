@@ -47,8 +47,7 @@ export default function CTASection() {
                 </span>
               </h2>
               <p className="text-slate-300 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-                Bergabung dengan ribuan pengguna yang telah menggunakan KalkulatorPajak
-                untuk perhitungan pajak yang akurat dan cepat.
+                Bergabung dengan ribuan pelaku usaha yang telah mensimulasikan PPh Final PP 55/2022 mereka secara akurat.
               </p>
               <Link
                 href="/dashboard"

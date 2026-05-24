@@ -19,13 +19,13 @@ export default function HeroSection() {
       <div className="max-w-5xl mx-auto text-center w-full">
         <div className="animate-fade-in-up">
           <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight">
-            Simulasi <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Kalkulator Pajak Indonesia</span>
+            Simulasi <span className="bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">Kalkulator Pajak UMKM</span>
           </h1>
         </div>
 
         <div className="opacity-0 animate-fade-in-up animate-delay-100">
           <p className="text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto mb-12 leading-relaxed">
-            Solusi cerdas perhitungan Pajak Penghasilan Orang Pribadi untuk Karyawan, UMKM, Profesi Bebas, dan Norma.
+            Solusi cerdas perhitungan Pajak Penghasilan (PPh) Final 0.5% khusus pelaku usaha UMKM berdasarkan regulasi PP 55/2022.
           </p>
         </div>
 
@@ -35,7 +35,7 @@ export default function HeroSection() {
               href="/dashboard"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-lg transition-all shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-0.5"
             >
-              Get Started - Free
+              Mulai Simulasi - Gratis
               <ChevronRight className="w-5 h-5" />
             </Link>
             <a
@@ -51,8 +51,8 @@ export default function HeroSection() {
         <div className="opacity-0 animate-fade-in-up animate-delay-300 mt-20 grid grid-cols-2 md:grid-cols-4 gap-8">
           <StatCard value="50K+" label="Perhitungan" icon={Calculator} />
           <StatCard value="99.9%" label="Akurat" icon={CheckCircle} />
-          <StatCard value="4" label="Modul Pajak" icon={FileText} />
-          <StatCard value="0" label="Biaya" icon={Zap} />
+          <StatCard value="PP 55" label="Regulasi" icon={FileText} />
+          <StatCard value="Rp0" label="Biaya" icon={Zap} />
         </div>
       </div>
     </section>

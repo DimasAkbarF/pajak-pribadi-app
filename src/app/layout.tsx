@@ -10,13 +10,13 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kalkulator Pajak Pribadi | PPh OP UU HPP 2021",
-  description: "Kalkulator PPh Orang Pribadi Indonesia sesuai UU HPP 2021 dan PP 55/2022. Hitung pajak untuk Karyawan, UMKM, Norma (NPPN), dan Profesi Bebas.",
-  keywords: ["PPh OP", "pajak", "kalkulator", "UU HPP", "UMKM", "Norma", "PTKP"],
-  authors: [{ name: "Kalkulator Pajak Pribadi" }],
+  title: "Kalkulator Pajak UMKM | PPh Final 0.5% PP 55/2022",
+  description: "Kalkulator PPh Final 0.5% khusus UMKM Indonesia sesuai PP 55/2022. Simulasikan pajak bulanan pelaku usaha dengan batas bebas pajak Rp500 Juta secara instan.",
+  keywords: ["PPh Final", "pajak UMKM", "kalkulator pajak", "PP 55/2022", "batas bebas pajak", "pajak orang pribadi"],
+  authors: [{ name: "Kalkulator Pajak UMKM" }],
   openGraph: {
-    title: "Kalkulator Pajak Pribadi",
-    description: "Kalkulator PPh Orang Pribadi Indonesia sesuai UU HPP 2021",
+    title: "Kalkulator Pajak UMKM",
+    description: "Kalkulator PPh Final 0.5% khusus UMKM Indonesia sesuai PP 55/2022",
     type: "website",
   },
 };

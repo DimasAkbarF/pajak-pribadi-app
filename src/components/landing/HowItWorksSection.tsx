@@ -35,7 +35,7 @@ export default function HowItWorksSection() {
             Cara Penggunaan
           </h2>
           <p className="text-slate-400 max-w-2xl mx-auto">
-            Hitung pajak Anda dalam 3 langkah sederhana
+            Hitung pajak UMKM Anda dalam 3 langkah mudah
           </p>
         </AnimatedSection>
 
@@ -43,20 +43,20 @@ export default function HowItWorksSection() {
           {[
             {
               step: "01",
-              title: "Pilih Modul",
-              desc: "Pilih jenis wajib pajak yang sesuai dengan profesi Anda",
+              title: "Pilih Bulan Masa Pajak",
+              desc: "Pilih masa bulan operasional usaha yang akan Anda simulasikan pajaknya",
               icon: Calculator,
             },
             {
               step: "02",
-              title: "Input Data",
-              desc: "Masukkan penghasilan bruto, PTKP, dan kredit pajak",
+              title: "Masukkan Omzet",
+              desc: "Masukkan omzet kotor bulan berjalan dan total kumulatif bruto dari Januari",
               icon: TrendingUp,
             },
             {
               step: "03",
-              title: "Dapatkan Hasil",
-              desc: "Lihat status pajak dan download laporan PDF",
+              title: "Peroleh Slip Pajak",
+              desc: "Lihat rincian PPh 0.5% secara instan dan ekspor laporan rekap berformat PDF",
               icon: Download,
             },
           ].map((item, i) => (

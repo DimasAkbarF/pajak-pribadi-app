@@ -36,19 +36,19 @@ function AnimatedSection({ children, className = "" }: { children: React.ReactNo
 
 function FeatureCard({ icon: Icon, title, description, color }: { icon: any; title: string; description: string; color: string }) {
   const colorClasses: Record<string, string> = {
-    blue: "bg-blue-500/5 text-blue-400 border-blue-500/20",
-    emerald: "bg-emerald-500/5 text-emerald-400 border-emerald-500/20",
-    violet: "bg-violet-500/5 text-violet-400 border-violet-500/20",
-    amber: "bg-amber-500/5 text-amber-400 border-amber-500/20",
+    blue: "bg-blue-500/5 text-blue-400 border-blue-500/10",
+    cyan: "bg-cyan-500/5 text-cyan-400 border-cyan-500/10",
+    indigo: "bg-indigo-500/5 text-indigo-400 border-indigo-500/10",
+    slate: "bg-slate-500/5 text-slate-300 border-slate-500/10",
   };
 
   return (
     <div className={`p-6 rounded-2xl border ${colorClasses[color]} backdrop-blur-sm hover:scale-[1.02] transition-transform duration-300`}>
       <div className={`w-12 h-12 rounded-xl ${colorClasses[color].split(" ")[0]} flex items-center justify-center mb-4`}>
-        <Icon className="w-6 h-6" />
+        <Icon className="w-5 h-5" />
       </div>
-      <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
-      <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+      <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
+      <p className="text-slate-400 text-xs leading-relaxed">{description}</p>
     </div>
   );
 }
@@ -58,11 +58,11 @@ export default function FeaturesSection() {
     <section id="features" className="relative z-10 py-24 px-4 sm:px-6 lg:px-8 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         <AnimatedSection className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-            Fitur Unggulan
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
+            Fitur Unggulan UMKM
           </h2>
-          <p className="text-slate-400 max-w-2xl mx-auto">
-            Semua yang Anda butuhkan untuk perhitungan pajak yang akurat dan mudah
+          <p className="text-slate-400 text-sm max-w-2xl mx-auto">
+            Semua yang Anda butuhkan untuk kalkulasi dan pelaporan PPh Final UMKM secara instan
           </p>
         </AnimatedSection>
 
@@ -76,33 +76,33 @@ export default function FeaturesSection() {
           <m.div variants={fadeInUp}>
             <FeatureCard
               icon={Calculator}
-              title="4 Modul Pajak"
-              description="Karyawan, UMKM, Norma, dan Profesi Bebas dengan perhitungan sesuai regulasi terbaru"
+              title="PP 55/2022 Akurat"
+              description="Kalkulasi presisi mengikuti batas bebas pajak Rp500 Juta Orang Pribadi & tarif final 0.5%"
               color="blue"
             />
           </m.div>
           <m.div variants={fadeInUp}>
             <FeatureCard
               icon={FileText}
-              title="PDF Export Pro"
-              description="Generate laporan PDF profesional dengan format standar untuk arsip atau pelaporan"
-              color="emerald"
+              title="PDF Export Receipt"
+              description="Ekspor slip rekap perhitungan PPh bulanan berformat profesional untuk kebutuhan pembukuan"
+              color="cyan"
             />
           </m.div>
           <m.div variants={fadeInUp}>
             <FeatureCard
               icon={Lock}
               title="100% Privat"
-              description="Semua perhitungan dilakukan di browser. Data tidak tersimpan tanpa izin Anda"
-              color="violet"
+              description="Seluruh proses komputasi berjalan di browser lokal. Data omzet aman di perangkat Anda"
+              color="indigo"
             />
           </m.div>
           <m.div variants={fadeInUp}>
             <FeatureCard
               icon={Clock}
-              title="Real-time"
-              description="Hasil perhitungan muncul instan saat Anda menginput data. Tidak perlu menunggu"
-              color="amber"
+              title="Real-time Engine"
+              description="Hasil perhitungan status PPh Nihil atau Kurang Bayar langsung terupdate saat omzet diinput"
+              color="slate"
             />
           </m.div>
         </m.div>

@@ -1,8 +1,8 @@
 "use client";
 
 import { TaxBreakdown } from "@/types";
-import { formatRupiah, getBracketBreakdown } from "@/lib/tax-engine";
-import { Download, TrendingUp, Calculator, Wallet, FileText, Save, CheckCircle, AlertTriangle, Info, Receipt } from "lucide-react";
+import { formatRupiah } from "@/lib/tax-engine";
+import { Download, Calculator, Wallet, Save, CheckCircle, AlertTriangle, Receipt, Calendar } from "lucide-react";
 
 // Helper to get next month for due date
 function getNextMonth(bulan: string): string {
@@ -20,13 +20,13 @@ interface TaxResultProps {
 
 function EmptyState() {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 lg:p-12 text-center border border-gray-200 dark:border-gray-700 shadow-sm">
-      <div className="w-20 h-20 bg-blue-50 dark:bg-blue-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
-        <Calculator className="w-10 h-10 text-blue-500 dark:text-blue-400" />
+    <div className="bg-white/[0.02] backdrop-blur-xl rounded-3xl p-8 lg:p-12 text-center border border-white/5 shadow-xl">
+      <div className="w-16 h-16 bg-blue-500/5 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-blue-500/10">
+        <Calculator className="w-8 h-8 text-blue-400" />
       </div>
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Siap Menghitung Pajak</h3>
-      <p className="text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
-        Masukkan data penghasilan Anda pada form di sebelah kiri untuk melihat hasil perhitungan PPh
+      <h3 className="text-base font-bold text-white mb-2">Siap Menghitung Pajak UMKM</h3>
+      <p className="text-slate-400 text-xs max-w-xs mx-auto leading-relaxed">
+        Masukkan rincian data omzet bulanan pada form untuk melihat hasil PPh Final 0.5% Anda secara otomatis.
       </p>
     </div>
   );
@@ -37,305 +37,169 @@ export default function TaxResult({ result, onDownloadPDF, onSave, isSaving }: T
     return <EmptyState />;
   }
 
-  const brackets = getBracketBreakdown(result.pkpRounded);
   const isBebas = result.umkmDetail 
     ? result.umkmDetail.kumulatifOmzet <= 500_000_000 
     : (result.penghasilanBruto <= 500_000_000 && result.umkmTax === 0);
 
   const getStatusColor = () => {
-    switch (result.status) {
-      case "Kurang Bayar": return { bg: "bg-red-50 dark:bg-red-900/20", border: "border-red-200 dark:border-red-800", text: "text-red-700 dark:text-red-400", icon: "text-red-600 dark:text-red-400", light: "bg-red-100 dark:bg-red-800/50" };
-      case "Nihil": return { bg: "bg-green-50 dark:bg-green-900/20", border: "border-green-200 dark:border-green-800", text: "text-green-700 dark:text-green-400", icon: "text-green-600 dark:text-green-400", light: "bg-green-100 dark:bg-green-800/50" };
-      default: return { bg: "bg-blue-50 dark:bg-blue-900/20", border: "border-blue-200 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400", icon: "text-blue-600 dark:text-blue-400", light: "bg-blue-100 dark:bg-blue-800/50" };
+    if (isBebas) {
+      return { 
+        bg: "bg-gradient-to-br from-[#0b1730] via-slate-900 to-[#071120]", 
+        border: "border-cyan-500/20 shadow-sm shadow-cyan-950/20", 
+        text: "text-cyan-400", 
+        icon: "text-cyan-400", 
+        light: "bg-cyan-500/10 border border-cyan-500/20" 
+      };
+    } else {
+      return { 
+        bg: "bg-gradient-to-br from-blue-950/30 via-slate-900 to-[#071120]", 
+        border: "border-blue-500/20 shadow-sm shadow-blue-950/25", 
+        text: "text-blue-400", 
+        icon: "text-blue-400", 
+        light: "bg-blue-600/10 border border-blue-500/20" 
+      };
     }
   };
 
   const statusColor = getStatusColor();
 
   return (
-    <div className="space-y-4 lg:sticky lg:top-24">
+    <div className="space-y-6 lg:sticky lg:top-28">
       {/* Status Card */}
-      <div className={`rounded-2xl p-6 ${statusColor.bg} border ${statusColor.border}`}>
-        <div className="flex items-center justify-between">
+      <div className={`rounded-3xl p-6 ${statusColor.bg} border ${statusColor.border} transition-all duration-300`}>
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               Status Perhitungan
             </p>
-            <p className={`text-3xl font-bold mt-2 ${statusColor.text}`}>
-              {result.status}
+            <p className={`text-2xl font-extrabold mt-1.5 ${statusColor.text}`}>
+              {isBebas ? "Bebas Pajak (Nihil)" : "Wajib Setor"}
             </p>
           </div>
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center ${statusColor.light}`}>
-            <Wallet className={`w-8 h-8 ${statusColor.icon}`} />
+          <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${statusColor.light}`}>
+            <Wallet className={`w-5 h-5 ${statusColor.icon}`} />
           </div>
         </div>
         
-        {result.status === "Kurang Bayar" && (
-          <div className="mt-5 pt-4 border-t border-red-200 dark:border-red-800/50">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Jumlah Kurang Bayar</p>
-            <p className="text-2xl font-bold text-red-700 dark:text-red-400">
-              {formatRupiah(result.kurangBayar)}
-            </p>
-          </div>
-        )}
-        
-        {result.status === "Lebih Bayar" && (
-          <div className="mt-5 pt-4 border-t border-blue-200 dark:border-blue-800/50">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Jumlah Lebih Bayar</p>
-            <p className="text-2xl font-bold text-blue-700 dark:text-blue-400">
-              {formatRupiah(result.kreditPajak.total - result.totalTax)}
-            </p>
-          </div>
-        )}
-        
-        {isBebas && (
-          <div className="mt-5 pt-4 border-t border-green-200 dark:border-green-800/50">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-              <p className="text-sm font-medium text-green-700 dark:text-green-400">
-                Penghasilan dalam batas "Bebas Pajak"
+        {isBebas ? (
+          <div className="mt-5 pt-4 border-t border-slate-800">
+            <div className="flex items-start gap-2.5">
+              <CheckCircle className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                Omzet kumulatif di bawah Rp500 Juta. Anda dibebaskan dari kewajiban menyetor PPh bulanan.
               </p>
             </div>
           </div>
-        )}
-        
-        {/* UMKM Monthly Detail */}
-        {result.umkmDetail && (
-          <div className="mt-5 pt-4 border-t border-emerald-200 dark:border-emerald-800/50">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
-              <p className="text-sm font-bold text-red-700 dark:text-red-400 uppercase">
-                KURANG BAYAR (PPh 29)
+        ) : (
+          result.umkmDetail && (
+            <div className="mt-5 pt-4 border-t border-slate-800">
+              <div className="flex items-center gap-1.5 mb-1">
+                <AlertTriangle className="w-3.5 h-3.5 text-blue-400" />
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                  PPh Final Setor Bulan Ini
+                </p>
+              </div>
+              <p className="text-2xl font-black text-white tracking-tight">
+                {formatRupiah(result.umkmDetail.pphSetorBulan)}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Pajak atas bagian omzet bruto masa {result.umkmDetail.bulan} yang telah melewati ambang batas Rp500 Juta.
               </p>
             </div>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-              {formatRupiah(result.umkmDetail.pphSetorBulan)}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              PPh Final Setor Bulan Ini
-            </p>
-          </div>
+          )
         )}
       </div>
 
       {/* Calculation Breakdown */}
-      <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-            <Receipt className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+      <div className="bg-white/[0.02] backdrop-blur-md rounded-3xl p-6 shadow-xl border border-white/5">
+        <div className="flex items-center gap-3 mb-5 pb-3 border-b border-white/5">
+          <div className="p-2 bg-slate-900 rounded-xl border border-slate-800">
+            <Receipt className="w-4 h-4 text-slate-400" />
           </div>
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white">Rincian Perhitungan</h3>
+          <div>
+            <h3 className="text-sm font-bold text-white">Rincian Perhitungan Pajak</h3>
+            <p className="text-[10px] text-slate-400">Dasar Pengenaan Pajak (DPP) & PPh Terutang</p>
+          </div>
         </div>
         
-        <div className="space-y-1">
-          {/* UMKM Detail Section */}
-          {result.umkmDetail && (
+        <div className="space-y-1.5">
+          {result.umkmDetail ? (
             <>
-              <div className="flex justify-between items-center py-3 px-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Omzet Bulan {result.umkmDetail.bulan}</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.omzetBulanIni)}</span>
+              <div className="flex justify-between items-center py-2 px-2.5 rounded-xl hover:bg-white/[0.01] transition-colors duration-200">
+                <span className="text-xs text-slate-400">Omzet Bulan {result.umkmDetail.bulan}</span>
+                <span className="text-sm font-bold text-slate-200">{formatRupiah(result.umkmDetail.omzetBulanIni)}</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Kumulatif Omzet Jan - {result.umkmDetail.bulan}</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.kumulatifOmzet)}</span>
+              <div className="flex justify-between items-center py-2 px-2.5 rounded-xl hover:bg-white/[0.01] transition-colors duration-200">
+                <span className="text-xs text-slate-400">Kumulatif Omzet (Jan - {result.umkmDetail.bulan})</span>
+                <span className="text-sm font-bold text-slate-200">{formatRupiah(result.umkmDetail.kumulatifOmzet)}</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20">
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Bebas PPh (Rp500 juta pertama)</span>
-                <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatRupiah(result.umkmDetail.bebasPPh)}</span>
+              <div className="flex justify-between items-center py-2.5 px-3 rounded-xl bg-cyan-500/5 border border-cyan-500/10">
+                <span className="text-xs font-semibold text-cyan-300/90">Bebas Pajak (s.d Rp500 Juta)</span>
+                <span className="text-sm font-bold text-cyan-400">{formatRupiah(result.umkmDetail.bebasPPh)}</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Omzet Kena Pajak Bulan {result.umkmDetail.bulan}</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.umkmDetail.omzetKenaPajakBulan)}</span>
+              <div className="flex justify-between items-center py-2 px-2.5 rounded-xl hover:bg-white/[0.01] transition-colors duration-200">
+                <span className="text-xs text-slate-400">Omzet Kena Pajak Bulan Ini</span>
+                <span className="text-sm font-bold text-slate-200">{formatRupiah(result.umkmDetail.omzetKenaPajakBulan)}</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3">
-                <span className="text-sm text-gray-600 dark:text-gray-400">Tarif PPh Final</span>
-                <span className="font-semibold text-gray-900 dark:text-white">{result.umkmDetail.tarifPPh}%</span>
+              <div className="flex justify-between items-center py-2 px-2.5 rounded-xl hover:bg-white/[0.01] transition-colors duration-200">
+                <span className="text-xs text-slate-400">Tarif PPh Final UMKM</span>
+                <span className="text-sm font-bold text-blue-400">{result.umkmDetail.tarifPPh}%</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-amber-50/50 dark:bg-amber-900/20">
-                <span className="text-sm font-semibold text-amber-700 dark:text-amber-300">PPh Setor Bulan {result.umkmDetail.bulan}</span>
-                <span className="font-bold text-amber-600 dark:text-amber-400">{formatRupiah(result.umkmDetail.pphSetorBulan)}</span>
+              <div className="flex justify-between items-center py-2.5 px-3 rounded-xl bg-blue-500/5 border border-blue-500/10">
+                <span className="text-xs font-semibold text-blue-300">PPh Masa Harus Setor</span>
+                <span className="text-sm font-extrabold text-blue-400">{formatRupiah(result.umkmDetail.pphSetorBulan)}</span>
               </div>
-              <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-amber-50/50 dark:bg-amber-900/20 border-t border-amber-200 dark:border-amber-800">
-                <span className="text-sm font-bold text-amber-800 dark:text-amber-200">Total PPh s.d. {result.umkmDetail.bulan}</span>
-                <span className="font-bold text-amber-700 dark:text-amber-400">{formatRupiah(result.umkmDetail.totalPPhKumulatif)}</span>
+              <div className="flex justify-between items-center py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-xs font-bold text-slate-400">Total PPh Setor Kumulatif</span>
+                <span className="text-sm font-bold text-white">{formatRupiah(result.umkmDetail.totalPPhKumulatif)}</span>
               </div>
-              <div className="py-2 px-3 text-xs text-gray-500 dark:text-gray-400">
-                PPh disetor paling lambat tgl 15 {getNextMonth(result.umkmDetail.bulan)}.
+              
+              {!isBebas && (
+                <div className="flex items-center gap-2 py-3 px-3 rounded-2xl bg-white/[0.01] border border-white/5 text-[10px] text-slate-400 mt-2">
+                  <Calendar className="w-3.5 h-3.5 text-blue-400 flex-shrink-0" />
+                  <span>
+                    Batas penyetoran PPh Final paling lambat tanggal 15 bulan <strong>{getNextMonth(result.umkmDetail.bulan)}</strong>.
+                  </span>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="flex justify-between items-center py-2 px-2.5 rounded-xl bg-white/[0.01] border border-white/5">
+                <span className="text-xs text-slate-400">Total Omzet Tahunan</span>
+                <span className="text-sm font-bold text-slate-200">{formatRupiah(result.penghasilanBruto)}</span>
+              </div>
+              <div className="flex justify-between items-center py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800">
+                <span className="text-xs font-bold text-slate-400">Total PPh Terutang</span>
+                <span className="text-sm font-bold text-white">{formatRupiah(result.totalTax)}</span>
               </div>
             </>
           )}
-          
-          {/* Income Section - hide for UMKM if detail shown */}
-          {!result.umkmDetail && (
-          <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-            <span className="text-sm text-gray-600 dark:text-gray-400">Penghasilan Bruto</span>
-            <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(result.penghasilanBruto)}</span>
-          </div>
-          )}
-          
-          {result.biayaJabatan > 0 && (
-            <div className="flex justify-between items-center py-2 px-3">
-              <span className="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                Biaya Jabatan (5%, max 6jt)
-              </span>
-              <span className="font-medium text-red-500 dark:text-red-400">-{formatRupiah(result.biayaJabatan)}</span>
-            </div>
-          )}
-          
-          {result.pengeluaranNorma > 0 && (
-            <div className="flex justify-between items-center py-2 px-3">
-              <span className="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                Pengeluaran Norma
-              </span>
-              <span className="font-medium text-red-500 dark:text-red-400">-{formatRupiah(result.pengeluaranNorma)}</span>
-            </div>
-          )}
-          
-          {result.pengeluaranOperasional > 0 && (
-            <div className="flex justify-between items-center py-2 px-3">
-              <span className="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-                Pengeluaran Operasional
-              </span>
-              <span className="font-medium text-red-500 dark:text-red-400">-{formatRupiah(result.pengeluaranOperasional)}</span>
-            </div>
-          )}
-          
-          <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-blue-50/50 dark:bg-blue-900/20 border-y border-blue-100 dark:border-blue-800/30">
-            <span className="text-sm font-semibold text-blue-900 dark:text-blue-300">Penghasilan Neto</span>
-            <span className="font-bold text-blue-700 dark:text-blue-400">{formatRupiah(result.penghasilanNeto)}</span>
-          </div>
-          
-          {/* PKP Section */}
-          <div className="flex justify-between items-center py-2 px-3">
-            <span className="text-sm text-gray-500 dark:text-gray-500 flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-              PTKP (Penghasilan Tidak Kena Pajak)
-            </span>
-            <span className="font-medium text-orange-500 dark:text-orange-400">-{formatRupiah(result.ptkp)}</span>
-          </div>
-          
-          {result.pkp !== result.pkpRounded && (
-            <div className="flex justify-between items-center py-2 px-3">
-              <span className="text-sm text-gray-500 dark:text-gray-500">PKP (sebelum pembulatan)</span>
-              <span className="font-medium text-gray-600 dark:text-gray-400">{formatRupiah(result.pkp)}</span>
-            </div>
-          )}
-          
-          <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-violet-50/50 dark:bg-violet-900/20 border-y border-violet-100 dark:border-violet-800/30">
-            <span className="text-sm font-semibold text-violet-900 dark:text-violet-300">PKP (Penghasilan Kena Pajak)</span>
-            <span className="font-bold text-violet-700 dark:text-violet-400">{formatRupiah(result.pkpRounded)}</span>
-          </div>
-          
-          {/* Tax Section */}
-          {result.progressiveTax > 0 && (
-            <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-gray-50/50 dark:bg-gray-700/30 mt-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">PPh Progresif Terhitung</span>
-              <span className="font-bold text-gray-900 dark:text-white">{formatRupiah(result.progressiveTax)}</span>
-            </div>
-          )}
-          
-          {result.umkmTax > 0 && (
-            <div className="flex justify-between items-center py-3 px-3 rounded-lg bg-emerald-50/50 dark:bg-emerald-900/20">
-              <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">PPh UMKM Final (0.5%)</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatRupiah(result.umkmTax)}</span>
-            </div>
-          )}
-          
-          {/* Tax Credits */}
-          {result.kreditPajak.total > 0 && (
-            <div className="mt-2 pt-2 border-t border-dashed border-gray-200 dark:border-gray-700">
-              <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide px-3 mb-2">Kredit Pajak</p>
-              {result.kreditPajak.pph21 > 0 && (
-                <div className="flex justify-between items-center py-1.5 px-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-500">PPh Pasal 21</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">-{formatRupiah(result.kreditPajak.pph21)}</span>
-                </div>
-              )}
-              {result.kreditPajak.pph22 > 0 && (
-                <div className="flex justify-between items-center py-1.5 px-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-500">PPh Pasal 22</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">-{formatRupiah(result.kreditPajak.pph22)}</span>
-                </div>
-              )}
-              {result.kreditPajak.pph23 > 0 && (
-                <div className="flex justify-between items-center py-1.5 px-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-500">PPh Pasal 23</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">-{formatRupiah(result.kreditPajak.pph23)}</span>
-                </div>
-              )}
-              {result.kreditPajak.pph25 > 0 && (
-                <div className="flex justify-between items-center py-1.5 px-3">
-                  <span className="text-sm text-gray-500 dark:text-gray-500">PPh Pasal 25</span>
-                  <span className="font-medium text-green-600 dark:text-green-400">-{formatRupiah(result.kreditPajak.pph25)}</span>
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Total */}
-          <div className="flex justify-between items-center py-4 px-4 mt-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900">
-            <span className="font-semibold">Total PPh Terutang</span>
-            <span className="text-xl font-bold">{formatRupiah(result.totalTax)}</span>
-          </div>
         </div>
       </div>
 
-      {/* Bracket Breakdown */}
-      {result.pkpRounded > 0 && result.progressiveTax > 0 && brackets.length > 0 && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 mb-5">
-            <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-              <TrendingUp className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </div>
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Rincian Tarif Progresif UU HPP</h3>
-          </div>
-          <div className="space-y-2">
-            {brackets.map((b, i) => (
-              <div key={i} className="flex justify-between items-center py-3 px-4 rounded-xl bg-gray-50/50 dark:bg-gray-700/30">
-                <div className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-lg bg-white dark:bg-gray-600 shadow-sm flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-300">
-                    {(b.rate * 100).toFixed(0)}%
-                  </span>
-                  <span className="text-sm text-gray-600 dark:text-gray-400">{b.range}</span>
-                </div>
-                <span className="font-semibold text-gray-900 dark:text-white">{formatRupiah(b.tax)}</span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-            <p className="text-xs text-blue-700 dark:text-blue-300 text-center">
-              Tarif progresif sesuai UU HPP No. 7 Tahun 2021
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Action Buttons */}
-      <div className="grid grid-cols-2 gap-3 pt-2">
+      <div className="grid grid-cols-2 gap-4">
         <button
           onClick={onDownloadPDF}
-          className="flex items-center justify-center gap-2 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white font-semibold py-3.5 px-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-all duration-200 shadow-sm hover:shadow-md"
+          className="flex items-center justify-center gap-2 bg-[#0b1730] hover:bg-[#101b36] text-slate-200 font-bold py-3 px-4 rounded-2xl border border-slate-700 hover:border-blue-500/40 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-sm text-sm"
         >
-          <FileText className="w-5 h-5 text-blue-500" />
-          <span className="hidden sm:inline">Download PDF</span>
-          <span className="sm:hidden">PDF</span>
+          <Download className="w-4 h-4 text-blue-400" />
+          <span>Unduh PDF</span>
         </button>
         <button
           onClick={onSave}
           disabled={isSaving}
-          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3.5 px-4 rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 disabled:shadow-none"
+          className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-bold py-3 px-4 rounded-2xl transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] shadow-md shadow-blue-500/10 disabled:shadow-none text-sm"
         >
           {isSaving ? (
             <>
-              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               Menyimpan...
             </>
           ) : (
             <>
-              <Save className="w-5 h-5" />
+              <Save className="w-4 h-4" />
               Simpan
             </>
           )}
